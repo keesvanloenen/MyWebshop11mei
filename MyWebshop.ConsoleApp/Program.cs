@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MyWebshop.ConsoleApp.DAL;
 using MyWebshop.ConsoleApp.Models;
 
@@ -8,8 +9,11 @@ internal class Program
 {
     static void Main(string[] args)
     {
+        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+        var config = builder.Build();
+
         var options = new DbContextOptionsBuilder<WebShopDbContext>()
-            .UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=MyWebshop;ConnectRetryCount=0")
+            .UseSqlServer(config.GetConnectionString("DefaultConn"))
             .Options;
 
         Initialize(options);
@@ -45,7 +49,7 @@ internal class Program
 
         foreach (var customer in customers)
         {
-            Console.WriteLine($"{customer.Id} {customer.Name}");
+            Console.WriteLine($"{customer.Id} {customer.Name}: {customer.CreatedAt:yyyy-MM-dd HH:mm:ss}");
         }
     }
 }
