@@ -52,15 +52,25 @@ internal class Program
         //    .Collection(c => c.Orders)
         //    .Load();
 
-        context.Entry(customer)
-            .Collection(c => c.Orders)
-            .Query()
-            .Take(1)
-            .ToList();
+        //context.Entry(customer)
+        //    .Collection(c => c.Orders)
+        //    .Query()
+        //    .Take(1)
+        //    .ToList();
+
+        var orders = context.Orders
+            .AsNoTracking()
+            .Where(o => o.CustomerId == customerId)
+            .Select(o => new
+            {
+                o.Id,
+                o.OrderDate,
+                o.TotalAmount,
+            }).Take(1);
 
         Console.WriteLine($"Orders voor Customer {customerId}");
 
-        foreach (var order in customer.Orders) 
+        foreach (var order in orders) 
         {
             Console.WriteLine($"\t - [{order.Id}] {order.OrderDate:dd-MM-yyyy}: {order.TotalAmount:C}");
         }
