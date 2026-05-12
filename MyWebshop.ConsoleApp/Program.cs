@@ -22,11 +22,29 @@ internal class Program
         Initialize(options);
         DataSeed(options);
 
-        //ShowCustomers(options);   // basic
-        ShowCustomerForMarly(options);  // querying
-        //ShowProducts(options);    // inheritance
-        //ShowOrders(options);      // one-to-many
-        //ShowCategories(options);    // many-to-many (explicit)
+        //ShowCustomers(options);          // basic
+        //ShowCustomerForMarly(options);   // querying
+        //ShowProducts(options);           // inheritance
+        //ShowOrders(options);             // one-to-many
+        //ShowCategories(options);         // many-to-many (explicit)
+        EagerLoading(options);
+    }
+
+    private static void ShowCustomers(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        var customers = context.Customers.Select(c => c);
+
+        customers = customers.Where(c => c.Name.Length > 4);
+        Console.WriteLine(customers.ToQueryString());
+
+
+
+        foreach (var customer in customers)
+        {
+            Console.WriteLine($"{customer.Id} {customer.Name}: {customer.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+        }
     }
 
     private static void ShowCustomerForMarly(DbContextOptions<WebShopDbContext> options)
@@ -69,14 +87,55 @@ internal class Program
     {
         using var context = new WebShopDbContext(options);
 
-        Console.WriteLine("===== Show per product the categorie(s) =====");
-        var productCategories = context.ProductCategories
-            .Include(pc => pc.Product)
-            .Include(pc => pc.Category);
+        //Console.WriteLine("===== Show per product the categorie(s) =====\n");
+        //var productCategories = context.ProductCategories
+        //    .Include(pc => pc.Product)
+        //    .Include(pc => pc.Category);
 
-        foreach (var pc in productCategories)
+        //foreach (var pc in productCategories)
+        //{
+        //    Console.WriteLine($"{pc.Category.Name} - {pc.Product.Name} ({pc.AddedOn})");
+        //}
+
+        var products = context.Products
+            .AsNoTracking()
+            .Include(p => p.ProductCategories)
+            .ThenInclude(pc => pc.Category)
+            .AsSplitQuery();
+
+        Console.WriteLine(products.ToQueryString());
+        foreach (var product in products)
         {
-            Console.WriteLine($"{pc.Category.Name} - {pc.Product.Name} ({pc.AddedOn})");
+            Console.WriteLine(product.Name);
+
+            foreach (var productCategory in product.ProductCategories)
+            {
+                Console.WriteLine($"\t- {productCategory.Category.Name}");
+            }
+
+        }
+
+
+    }
+
+    private static void ShowProducts(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        var products = context.Products;
+
+        foreach (var product in products)
+        {
+            Console.Write($"{product.Id} {product.Name} - {product.Price:C}");
+
+            if (product is PhysicalProduct pp)
+            {
+                Console.WriteLine($" | Weight: {pp.Weight} kg");
+            }
+            else if (product is DigitalProduct dp)
+            {
+                Console.WriteLine($" | Size: {dp.FileSizeInMb} Mb");
+            }
         }
     }
 
@@ -96,22 +155,28 @@ internal class Program
         }
     }
 
-    private static void ShowProducts(DbContextOptions<WebShopDbContext> options)
+    private static void EagerLoading(DbContextOptions<WebShopDbContext> options)
     {
         using var context = new WebShopDbContext(options);
 
-        var products = context.Products;
+        // Dit is een filtered include
+        var customers = context.Customers
+            .AsNoTracking()
+            .Include(
+                c => c.Orders
+                        .OrderByDescending(o => o.OrderDate)
+                        .Take(1)
+            );
 
-        foreach (var product in products)
+        Console.WriteLine(customers.ToQueryString());
+
+        foreach (var customer in customers)
         {
-            Console.Write($"{product.Id} {product.Name} - {product.Price:C}");
+            Console.WriteLine($"{customer.Name}");
 
-            if (product is PhysicalProduct pp)
+            foreach (var order in customer.Orders)
             {
-                Console.WriteLine($" | Weight: {pp.Weight} kg");
-            } else if (product is DigitalProduct dp)
-            {
-                Console.WriteLine($" | Size: {dp.FileSizeInMb} Mb");
+                Console.WriteLine($"\t {order.OrderDate} {order.TotalAmount}");
             }
         }
     }
@@ -167,22 +232,5 @@ internal class Program
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();       // quick prototyping
-    }
-
-    private static void ShowCustomers(DbContextOptions<WebShopDbContext> options)
-    {
-        using var context = new WebShopDbContext(options);
-
-        var customers = context.Customers.Select(c => c);
-        
-        customers = customers.Where(c => c.Name.Length > 4);
-        Console.WriteLine(customers.ToQueryString());
-
-
-
-        foreach (var customer in customers)
-        {
-            Console.WriteLine($"{customer.Id} {customer.Name}: {customer.CreatedAt:yyyy-MM-dd HH:mm:ss}");
-        }
     }
 }
