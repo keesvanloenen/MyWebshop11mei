@@ -27,8 +27,116 @@ internal class Program
         //ShowProducts(options);           // inheritance
         //ShowOrders(options);             // one-to-many
         //ShowCategories(options);         // many-to-many (explicit)
+        //Crud(options);
         //EagerLoading(options);
-        ExplicitLoading(options);
+        //ExplicitLoading(options);
+        OptimisticConcurrency(options);
+    }
+
+    private static void OptimisticConcurrency(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        // User A
+        var customer = context.Customers.Find(1)!;
+        Console.WriteLine($"User A loads: Credit = {customer.CreditLimit}");
+
+        // User B
+        context.Customers
+            .Where(c => c.Id == 1)
+            .ExecuteUpdate(setters => setters.SetProperty(c => c.CreditLimit, 2000m));
+        Console.WriteLine($"User B saved: Credit = 2000");
+
+        try
+        {
+            // User A
+            customer.CreditLimit = 1500m;
+            context.SaveChanges();
+        } catch (DbUpdateConcurrencyException ex)
+        {
+            Console.WriteLine("⚠️ CONFLICT");
+
+            foreach (var entry in ex.Entries)
+            {
+                if (entry.Entity is Customer conflictedCustomer)
+                {
+                    // Get current database values
+                    var dbValues = entry.GetDatabaseValues()!;
+
+                    // DB WINS scenario
+                    //entry.CurrentValues.SetValues(dbValues);
+                    //Console.WriteLine($"❌ Changes discarded {conflictedCustomer.CreditLimit}");
+
+                    // CLIENT WINS scenario
+                    entry.OriginalValues.SetValues(dbValues);
+                    context.SaveChanges();
+                    Console.WriteLine($"✔️ Client wins: {conflictedCustomer.CreditLimit:C} saved");
+                }
+            }
+            
+        }
+    }
+
+    private static void Crud(DbContextOptions<WebShopDbContext> options)
+    {
+        int newCustomerId = 0;      // hulvariabele
+
+        using (var context = new WebShopDbContext(options))
+        {
+            var newCustomer = new Customer
+            {
+                Name = "Gijs",
+                PhoneNumber = "1234567890",
+                CreditLimit = 1000.00m,
+                CreatedAt = DateTime.Now,
+            };
+
+            ((List<Order>)newCustomer.Orders).AddRange([
+                new Order{
+                    OrderDate = DateTime.Now.AddDays(-2),
+                    TotalAmount = 149.99m
+                },
+                new Order{
+                    OrderDate = DateTime.Now,
+                    TotalAmount = 249.99m
+                },
+            ]);
+
+            context.Customers.Add(newCustomer);
+
+            context.SaveChanges();
+            newCustomerId = newCustomer.Id;
+        }
+
+        Console.WriteLine(newCustomerId);
+
+        using (var context = new WebShopDbContext(options))
+        {
+            var customer = context.Customers
+                .Include(c => c.Orders)
+                .FirstOrDefault(c => c.Id == newCustomerId);
+
+            if (customer is not null)
+            {
+                customer.CreditLimit += 1_000_000m;
+
+                var firstOrder = customer.Orders.First();
+                firstOrder.TotalAmount += 2_000_000m;
+
+                context.ChangeTracker.DetectChanges();
+                Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+                context.SaveChanges();
+            }
+        }
+
+        using (var context = new WebShopDbContext(options))
+        {
+            var gijs = context.Customers.Find(7)!;
+
+            context.Customers.Remove(gijs);
+
+            context.SaveChanges();
+        }
     }
 
     private static void ExplicitLoading(DbContextOptions<WebShopDbContext> options)

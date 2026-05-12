@@ -13,6 +13,9 @@ public class Customer
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    // Concurrency token (SQL Server specifiek / database beheerd)
+    public byte[] RowVersion { get; set; } = null!;
+
     // Navigation property to Orders (one-to-many)
     public ICollection<Order> Orders { get; set; } = [];
 }

@@ -31,6 +31,9 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasDefaultValueSql("SYSDATETIME()")   // 👈 default constraint
             .IsRequired();
 
+        builder.Property(c => c.RowVersion)
+            .IsRowVersion();
+
         builder
             .HasMany(c => c.Orders)
             .WithOne(o => o.Customer)
