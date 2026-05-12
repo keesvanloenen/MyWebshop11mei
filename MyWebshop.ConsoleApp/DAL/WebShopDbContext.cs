@@ -11,6 +11,7 @@ public class WebShopDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<PhysicalProduct> PhysicalProducts { get; set; }
     public DbSet<DigitalProduct> DigitalProducts { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     public WebShopDbContext(DbContextOptions<WebShopDbContext> options) : base(options)
     {
@@ -25,7 +26,8 @@ public class WebShopDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration<Customer>(new CustomerConfiguration());
+        modelBuilder.ApplyConfiguration(new CustomerConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
 
         modelBuilder.Entity<Product>().UseTpcMappingStrategy();
 
