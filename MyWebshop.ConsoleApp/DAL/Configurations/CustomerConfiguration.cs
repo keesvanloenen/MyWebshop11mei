@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyWebshop.ConsoleApp.Models;
-using System.Reflection.Emit;
-
 namespace MyWebshop.ConsoleApp.DAL.Configurations;
 
 public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
@@ -32,5 +30,13 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasColumnType("datetime2(0)")
             .HasDefaultValueSql("SYSDATETIME()")   // 👈 default constraint
             .IsRequired();
+
+        builder
+            .HasMany(c => c.Orders)
+            .WithOne(o => o.Customer)
+            .HasForeignKey(o => o.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
     }
 }

@@ -23,7 +23,24 @@ internal class Program
         DataSeed(options);
 
         //ShowCustomers(options);
-        ShowProducts(options);
+        //ShowProducts(options);
+        ShowOrders(options);
+    }
+
+    private static void ShowOrders(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        var orders = context.Orders
+            .Include(o => o.Customer);  // later more 👊 eager loading
+        
+
+        Console.WriteLine(orders.ToQueryString());
+
+        foreach (var order in orders) 
+        {
+            Console.WriteLine($"{order.OrderDate} - {order.Customer.Name}");
+        }
     }
 
     private static void ShowProducts(DbContextOptions<WebShopDbContext> options)
@@ -53,6 +70,11 @@ internal class Program
         var customer1 = new Customer { Name = "Ab" };
         var customer2 = new Customer { Name = "Bo" };
         var customer3 = new Customer { Name = "Cas" };
+
+        customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-4), TotalAmount = 450.00m });
+        customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-7), TotalAmount = 190.00m });
+        customer2.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-1), TotalAmount = 27.50m });
+
 
         context.Customers.AddRange([customer1, customer2, customer3]);
         context.SaveChanges();

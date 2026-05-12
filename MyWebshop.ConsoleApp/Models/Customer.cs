@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace MyWebshop.ConsoleApp.Models;
+﻿namespace MyWebshop.ConsoleApp.Models;
 
 public class Customer
 {
+    
     public int Id { get; set; }
 
     public required string Name { get; set; }
@@ -14,4 +12,7 @@ public class Customer
     public decimal CreditLimit { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    // Navigation property to Orders (one-to-many)
+    public ICollection<Order> Orders { get; set; } = [];
 }
