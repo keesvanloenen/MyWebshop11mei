@@ -27,7 +27,44 @@ internal class Program
         //ShowProducts(options);           // inheritance
         //ShowOrders(options);             // one-to-many
         //ShowCategories(options);         // many-to-many (explicit)
-        EagerLoading(options);
+        //EagerLoading(options);
+        ExplicitLoading(options);
+    }
+
+    private static void ExplicitLoading(DbContextOptions<WebShopDbContext> options)
+    {
+        Console.Write("Vul het customerid in: ");
+        string input = Console.ReadLine() ?? string.Empty;
+
+        int customerId = int.Parse(input);
+
+        using var context = new WebShopDbContext(options);
+
+        Customer? customer = context.Customers.Find(customerId);
+
+        if (customer is null)
+        {
+            Console.WriteLine($"Customer met id {customerId} niet gevonden!");
+            return;
+        }
+
+        //context.Entry(customer)
+        //    .Collection(c => c.Orders)
+        //    .Load();
+
+        context.Entry(customer)
+            .Collection(c => c.Orders)
+            .Query()
+            .Take(1)
+            .ToList();
+
+        Console.WriteLine($"Orders voor Customer {customerId}");
+
+        foreach (var order in customer.Orders) 
+        {
+            Console.WriteLine($"\t - [{order.Id}] {order.OrderDate:dd-MM-yyyy}: {order.TotalAmount:C}");
+        }
+
     }
 
     private static void ShowCustomers(DbContextOptions<WebShopDbContext> options)
