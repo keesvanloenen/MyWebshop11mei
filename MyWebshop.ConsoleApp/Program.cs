@@ -23,9 +23,46 @@ internal class Program
         DataSeed(options);
 
         //ShowCustomers(options);   // basic
+        ShowCustomerForMarly(options);  // querying
         //ShowProducts(options);    // inheritance
         //ShowOrders(options);      // one-to-many
-        ShowCategories(options);    // many-to-many (explicit)
+        //ShowCategories(options);    // many-to-many (explicit)
+    }
+
+    private static void ShowCustomerForMarly(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        // 🔍 FirstOrDefault: found entity or null
+        Customer? customer1 = context.Customers.FirstOrDefault(c => c.Id == 10);
+        Console.WriteLine($"Found: {customer1?.Name ?? "nothing"}");
+
+        //if (customer1 is null)
+        //{
+        //    Console.WriteLine("No customer found with id 10");
+        //    return;
+        //}
+
+
+        // 🔍 First: found entity or exception
+        Customer customer2 = context.Customers.First(c => c.Id == 2);
+        Console.WriteLine($"Found: {customer2.Name}");
+        // Change 2 into 10 leads to exception
+
+        // 🔍 SingleOrDefault: found entity or null (exception when more than 1)
+        Customer? customer3 = context.Customers.SingleOrDefault(c => c.Name.Length == 6);
+        Console.WriteLine($"Found: {customer3?.Name ?? "nothing"}");
+        // Change 6 into 2 leads to exception!
+
+        // 🔍 Single: exception when not found + exception when more than 1
+        Customer customer4 = context.Customers.Single(c => c.Name.Length == 6);
+        Console.WriteLine($"Found: {customer4.Name}");
+
+        // 🔍 Find: like FirstOrDefault, but with only an identifier!
+        // Works on context.Customers
+        // First checks if ChangeTracker has the entity aboard, otherwise database is queried
+        Customer? customer5 = context.Customers.Find(5);
+        Console.WriteLine($"Found: {customer5?.Name ?? "nothing"}");
     }
 
     private static void ShowCategories(DbContextOptions<WebShopDbContext> options)
@@ -86,13 +123,16 @@ internal class Program
         var customer1 = new Customer { Name = "Ab" };
         var customer2 = new Customer { Name = "Bo" };
         var customer3 = new Customer { Name = "Cas" };
+        var customer4 = new Customer { Name = "Dik" };
+        var customer5 = new Customer { Name = "Eduard" };
+        var customer6 = new Customer { Name = "Fe" };
 
         customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-4), TotalAmount = 450.00m });
         customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-7), TotalAmount = 190.00m });
         customer2.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-1), TotalAmount = 27.50m });
 
 
-        context.Customers.AddRange([customer1, customer2, customer3]);
+        context.Customers.AddRange([customer1, customer2, customer3, customer4, customer5, customer6]);
         context.SaveChanges();
 
         var physicalProduct1 = new PhysicalProduct { Name = "Laptop", Price = 999.99m, Weight = 1.5m };
@@ -133,7 +173,12 @@ internal class Program
     {
         using var context = new WebShopDbContext(options);
 
-        var customers = context.Customers;
+        var customers = context.Customers.Select(c => c);
+        
+        customers = customers.Where(c => c.Name.Length > 4);
+        Console.WriteLine(customers.ToQueryString());
+
+
 
         foreach (var customer in customers)
         {
