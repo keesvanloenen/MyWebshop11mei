@@ -7,5 +7,5 @@ public abstract class Product
     public decimal Price { get; set; }
 
     // Navigation property for many-to-many relationship
-    public ICollection<Category> Categories { get; } = [];
+    public ICollection<ProductCategory> ProductCategories { get; } = [];
 }
