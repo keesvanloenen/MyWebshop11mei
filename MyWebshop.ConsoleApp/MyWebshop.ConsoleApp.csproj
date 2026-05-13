@@ -8,6 +8,40 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="demo-benchmark\.vs\School\v17\DocumentLayout.backup.json" />
+    <Content Include="demo-benchmark\.vs\School\v17\DocumentLayout.json" />
+    <Content Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\v18\DocumentLayout.backup.json" />
+    <Content Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\v18\DocumentLayout.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="demo-benchmark\.vs\ProjectEvaluation\school.metadata.v9.bin" />
+    <None Include="demo-benchmark\.vs\ProjectEvaluation\school.projects.v9.bin" />
+    <None Include="demo-benchmark\.vs\ProjectEvaluation\school.strings.v9.bin" />
+    <None Include="demo-benchmark\.vs\School\CopilotIndices\17.14.1641.39856\SemanticSymbols.db" />
+    <None Include="demo-benchmark\.vs\School\DesignTimeBuild\.dtbcache.v2" />
+    <None Include="demo-benchmark\.vs\School\FileContentIndex\9baec811-76e5-4d59-916f-b18162bf4aa5.vsidx" />
+    <None Include="demo-benchmark\.vs\School\v17\.futdcache.v2" />
+    <None Include="demo-benchmark\School.Benchmark\School.Benchmark.csproj" />
+    <None Include="demo-benchmark\School.ConsoleApp\School.ConsoleApp.csproj" />
+    <None Include="demo-benchmark\School.Library\School.Library.csproj" />
+    <None Include="demo-benchmark\School.sln" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\ProjectEvaluation\testcontainersdemo.metadata.v10.bin" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\ProjectEvaluation\testcontainersdemo.projects.v10.bin" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\ProjectEvaluation\testcontainersdemo.strings.v10.bin" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\DesignTimeBuild\.dtbcache.v2" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\FileContentIndex\a4af734f-3e99-4c4a-a57e-8b7a8e7d7594.vsidx" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\FileContentIndex\fb03496e-7dce-44d0-9d6f-da1d9260df98.vsidx" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\v18\.futdcache.v2" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\v18\TestStore\0\000.testlog" />
+    <None Include="demo-testcontainers\TestcontainersDemo\.vs\TestcontainersDemo.slnx\v18\TestStore\0\testlog.manifest" />
+    <None Include="demo-testcontainers\TestcontainersDemo\CustomerService.Tests\CustomerService.Tests.csproj" />
+    <None Include="demo-testcontainers\TestcontainersDemo\CustomerService\CustomerService.csproj" />
+    <None Include="demo-testcontainers\TestcontainersDemo\CustomerService\CustomerService.csproj.user" />
+    <None Include="demo-testcontainers\TestcontainersDemo\TestcontainersDemo.slnx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
   </ItemGroup>
@@ -16,6 +50,14 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="demo-benchmark\School.Benchmark\bin\Debug\net10.0\BenchmarkDotNet.Artifacts\results\" />
+    <Folder Include="demo-benchmark\School.ConsoleApp\bin\Debug\net10.0\" />
+    <Folder Include="demo-benchmark\School.ConsoleApp\obj\Debug\net10.0\refint\" />
+    <Folder Include="demo-benchmark\School.ConsoleApp\obj\Debug\net10.0\ref\" />
+    <Folder Include="demo-testcontainers\TestcontainersDemo\CustomerService.Tests\bin\Debug\net10.0\fine-code-coverage\build-output\" />
   </ItemGroup>
 
 </Project>
