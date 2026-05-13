@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MyWebshop.ConsoleApp.DAL;
 using MyWebshop.ConsoleApp.Models;
@@ -30,7 +31,72 @@ internal class Program
         //Crud(options);
         //EagerLoading(options);
         //ExplicitLoading(options);
-        OptimisticConcurrency(options);
+        //OptimisticConcurrency(options);
+        //FromSql(options);
+        //FromSql_StoredProcedure(options);
+        //FromSqlRaw(options);
+        //SqlQuery(options);
+
+    }
+
+    private static void SqlQuery(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        var names = context.Database
+              .SqlQuery<string>($"SELECT Name FROM Customers");
+
+        string.Join(", ", names);
+    }
+    private static void FromSqlRaw(DbContextOptions<WebShopDbContext> options)
+    {
+        var columnName = "CreditLimit";     // check met allowlist
+        var columnValue = new SqlParameter("columnVal", 1600m);    // user input
+
+        using var context = new WebShopDbContext(options);
+
+        var filteredCustomers = context.Customers
+            .FromSqlRaw($"SELECT * FROM Customers WHERE {columnName}= @columnVal", columnValue);
+
+        Console.WriteLine(filteredCustomers.ToQueryString());
+
+        foreach(var customer in filteredCustomers)
+        {
+            Console.WriteLine($"{customer.Name}: {customer.CreditLimit}");
+        }
+    }
+
+    private static void FromSql_StoredProcedure(DbContextOptions<WebShopDbContext> options)
+    {
+        var id = 2;
+
+        using var context = new WebShopDbContext(options);
+
+        var lastOrder = context.Orders
+            .FromSql($"EXECUTE dbo.ShowLastOrderForCustomer {id}")
+            .AsEnumerable()
+            .FirstOrDefault();
+
+        if (lastOrder is not null)
+        {
+            Console.WriteLine($"{lastOrder.OrderDate}");
+        }
+
+    }
+
+    private static void FromSql(DbContextOptions<WebShopDbContext> options)
+    {
+        using var context = new WebShopDbContext(options);
+
+        var filter = "%o";
+
+        var customers = context.Customers
+            .FromSql($"SELECT * FROM Customers WHERE Name LIKE {filter}");
+
+        Console.WriteLine(customers.ToQueryString());
+
+        Console.WriteLine(string.Join(", ", customers.Select(c => c.Name)));
+        
     }
 
     private static void OptimisticConcurrency(DbContextOptions<WebShopDbContext> options)
@@ -340,12 +406,12 @@ internal class Program
     {
         using var context = new WebShopDbContext(options);
 
-        var customer1 = new Customer { Name = "Ab" };
-        var customer2 = new Customer { Name = "Bo" };
-        var customer3 = new Customer { Name = "Cas" };
-        var customer4 = new Customer { Name = "Dik" };
-        var customer5 = new Customer { Name = "Eduard" };
-        var customer6 = new Customer { Name = "Fe" };
+        var customer1 = new Customer { Name = "Ab", PhoneNumber = "0611111111", CreditLimit = 2000.00m };
+        var customer2 = new Customer { Name = "Bo", PhoneNumber = "0622222222", CreditLimit = 2000.00m };
+        var customer3 = new Customer { Name = "Cas", PhoneNumber = "0633333333", CreditLimit = 1800.00m };
+        var customer4 = new Customer { Name = "Dik", PhoneNumber = "0644444444", CreditLimit = 1800.00m };
+        var customer5 = new Customer { Name = "Eduard", PhoneNumber = "0655555555", CreditLimit = 1600.00m };
+        var customer6 = new Customer { Name = "Fe", PhoneNumber = "0666666666", CreditLimit = 1600.00m };
 
         customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-4), TotalAmount = 450.00m });
         customer1.Orders.Add(new Order { OrderDate = DateTime.Now.AddDays(-7), TotalAmount = 190.00m });
@@ -379,6 +445,19 @@ internal class Program
         ]);
 
         context.SaveChanges();
+
+        context.Database.ExecuteSql(
+            $@"CREATE OR ALTER PROCEDURE dbo.ShowLastOrderForCustomer
+                 @customerId AS int
+            AS
+            BEGIN
+                SELECT TOP 1 *
+                FROM Orders AS o
+                WHERE o.CustomerId = @customerId
+                ORDER BY o.OrderDate;
+            END;"
+
+            );
     }
 
     private static void Initialize(DbContextOptions<WebShopDbContext> options)
